@@ -830,7 +830,7 @@ fun ConfigScreen(
                         drawRect(
                             Color(0xFFE0E0E0),
                             topLeft = Offset(m + col * (cellW + gap),
-                                top + row * (cellH + (GridCalculator.CAPTION_PT + gap) * scale)),
+                                top + row * (cellH + (GridCalculator.CAPTION_PT + GridCalculator.GAP_PT) * scale)),
                             size = Size(cellW, cellH)
                         )
                     }
