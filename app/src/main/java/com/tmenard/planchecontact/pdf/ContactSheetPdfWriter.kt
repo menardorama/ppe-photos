@@ -83,12 +83,25 @@ class ContactSheetPdfWriter(
         canvas.drawRect(cell, borderPaint)
         val bmp = bitmap
         if (bmp != null) {
-            val scale = minOf(cell.width() / bmp.width, cell.height() / bmp.height)
-            val dw = bmp.width * scale
-            val dh = bmp.height * scale
-            val dx = cell.left + (cell.width() - dw) / 2f
-            val dy = cell.top + (cell.height() - dh) / 2f
-            canvas.drawBitmap(bmp, null, RectF(dx, dy, dx + dw, dy + dh), bitmapPaint)
+            if (bmp.height > bmp.width) {
+                val cx = cell.centerX()
+                val cy = cell.centerY()
+                val scale = minOf(cell.height() / bmp.width, cell.width() / bmp.height)
+                val dw = bmp.width * scale
+                val dh = bmp.height * scale
+                canvas.save()
+                canvas.rotate(90f, cx, cy)
+                canvas.drawBitmap(bmp, null,
+                    RectF(cx - dw / 2f, cy - dh / 2f, cx + dw / 2f, cy + dh / 2f), bitmapPaint)
+                canvas.restore()
+            } else {
+                val scale = minOf(cell.width() / bmp.width, cell.height() / bmp.height)
+                val dw = bmp.width * scale
+                val dh = bmp.height * scale
+                val dx = cell.left + (cell.width() - dw) / 2f
+                val dy = cell.top + (cell.height() - dh) / 2f
+                canvas.drawBitmap(bmp, null, RectF(dx, dy, dx + dw, dy + dh), bitmapPaint)
+            }
         } else {
             canvas.drawRect(cell, emptyPaint)
         }
