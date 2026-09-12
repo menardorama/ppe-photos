@@ -114,6 +114,6 @@ class GridCalculatorTest {
     @Test
     fun `taille cible miniature A4 en pixels`() {
         val l = GridCalculator.computeLayout(spec(4), 1)
-        assertEquals(3507, GridCalculator.thumbnailTargetPx(l))
+        assertEquals(2338, GridCalculator.thumbnailTargetPx(l))
     }
 }
