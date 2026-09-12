@@ -36,4 +36,29 @@ class GridCalculatorTest {
         val l = GridCalculator.computeLayout(portrait, 10)
         assertEquals(412, GridCalculator.thumbnailTargetPx(l)) // 99.056/72*300
     }
+
+    @Test
+    fun `limites de pagination (multiples exacts)`() {
+        val l = GridCalculator.computeLayout(portrait, 35)
+        assertEquals(1, l.pageCount)
+        assertEquals(2, GridCalculator.computeLayout(portrait, 36).pageCount)
+        assertEquals(2, GridCalculator.computeLayout(portrait, 70).pageCount)
+        assertEquals(3, GridCalculator.computeLayout(portrait, 71).pageCount)
+    }
+
+    @Test
+    fun `domaine colonnes 3 a 8 valide dans les deux orientations`() {
+        for (landscape in listOf(false, true)) {
+            for (columns in 3..8) {
+                val l = GridCalculator.computeLayout(
+                    SheetSpec(landscape = landscape, columns = columns), 10)
+                org.junit.Assert.assertTrue(
+                    "rowsPerPage<1 pour landscape=$landscape columns=$columns",
+                    l.rowsPerPage >= 1)
+                org.junit.Assert.assertTrue(
+                    "photosPerPage<columns pour landscape=$landscape columns=$columns",
+                    l.photosPerPage >= columns)
+            }
+        }
+    }
 }

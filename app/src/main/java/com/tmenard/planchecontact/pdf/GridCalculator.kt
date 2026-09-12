@@ -31,6 +31,8 @@ object GridCalculator {
     const val PRINT_DPI = 300
 
     fun computeLayout(spec: SheetSpec, photoCount: Int): SheetLayout {
+        require(spec.columns >= 1) { "columns doit être >= 1" }
+        require(photoCount >= 0) { "photoCount doit être >= 0" }
         val contentW = spec.pageWidthPt - 2 * MARGIN_PT
         val contentH = spec.pageHeightPt - 2 * MARGIN_PT - HEADER_PT - FOOTER_PT
         val cellW = (contentW - (spec.columns - 1) * GAP_PT) / spec.columns
