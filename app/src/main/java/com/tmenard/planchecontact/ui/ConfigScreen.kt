@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.tmenard.planchecontact.pdf.GridCalculator
 import com.tmenard.planchecontact.pdf.SheetSpec
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ConfigScreen(
     spec: SheetSpec,
@@ -59,13 +59,19 @@ fun ConfigScreen(
                 FilterChip(selected = spec.landscape,
                     onClick = { setLandscape(true) }, label = { Text("Paysage") })
             }
-            Text("Colonnes : ${spec.columns}", style = MaterialTheme.typography.titleSmall)
-            Slider(
-                value = spec.columns.toFloat(),
-                onValueChange = { setColumns(it.toInt()) },
-                valueRange = 3f..8f,
-                steps = 4
-            )
+            Text("Taille des vignettes", style = MaterialTheme.typography.titleSmall)
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                (2..8).forEach { cols ->
+                    FilterChip(
+                        selected = spec.columns == cols,
+                        onClick = { setColumns(cols) },
+                        label = { Text(mmForColumns(spec, cols).toString() + " mm") }
+                    )
+                }
+            }
             // Aperçu live de la page 1
             Canvas(
                 Modifier.fillMaxWidth()
@@ -93,8 +99,7 @@ fun ConfigScreen(
             }
             Text(
                 "$photoCount photo(s) • ${layout.photosPerPage} photos/page • " +
-                "${layout.pageCount} page(s) • vignette ≈ " +
-                "${(layout.cellWidthPt * 25.4f / 72f).toInt()} mm",
+                "${layout.pageCount} page(s)",
                 style = MaterialTheme.typography.bodyMedium
             )
             Button(
@@ -105,3 +110,7 @@ fun ConfigScreen(
         }
     }
 }
+
+private fun mmForColumns(spec: SheetSpec, cols: Int): Int =
+    ((spec.pageWidthPt - 2 * GridCalculator.MARGIN_PT - (cols - 1) * GridCalculator.GAP_PT) / cols
+        * 25.4f / 72f).toInt()

@@ -56,7 +56,7 @@ class ContactSheetViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setTitle(t: String) { _spec.value = _spec.value.copy(title = t) }
     fun setLandscape(b: Boolean) { _spec.value = _spec.value.copy(landscape = b) }
-    fun setColumns(n: Int) { _spec.value = _spec.value.copy(columns = n.coerceIn(3, 8)) }
+    fun setColumns(n: Int) { _spec.value = _spec.value.copy(columns = n.coerceIn(2, 8)) }
 
     fun goToConfig() { if (_photos.value.isNotEmpty()) _screen.value = AppScreen.CONFIG }
     fun backToSelection() { _screen.value = AppScreen.SELECTION }
