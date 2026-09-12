@@ -5,8 +5,7 @@ import kotlin.math.floor
 
 data class SheetSpec(
     val landscape: Boolean = false,
-    val format: Int = 6,
-    val title: String = ""
+    val format: Int = 6
 ) {
     val pageWidthPt: Float get() = if (landscape) 841.89f else 595.28f
     val pageHeightPt: Float get() = if (landscape) 595.28f else 841.89f
