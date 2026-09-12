@@ -1,5 +1,6 @@
 package com.tmenard.planchecontact.export
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -9,7 +10,10 @@ fun openPdf(context: Context, uri: Uri) {
         setDataAndType(uri, "application/pdf")
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
-    context.startActivity(Intent.createChooser(intent, "Ouvrir le PDF"))
+    try {
+        context.startActivity(Intent.createChooser(intent, "Ouvrir le PDF"))
+    } catch (_: ActivityNotFoundException) {
+    }
 }
 
 fun sharePdf(context: Context, uri: Uri) {
@@ -18,5 +22,8 @@ fun sharePdf(context: Context, uri: Uri) {
         putExtra(Intent.EXTRA_STREAM, uri)
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
-    context.startActivity(Intent.createChooser(intent, "Partager la planche contact"))
+    try {
+        context.startActivity(Intent.createChooser(intent, "Partager la planche contact"))
+    } catch (_: ActivityNotFoundException) {
+    }
 }
