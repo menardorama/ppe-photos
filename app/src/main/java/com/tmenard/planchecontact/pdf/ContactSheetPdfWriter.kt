@@ -3,6 +3,7 @@ package com.tmenard.planchecontact.pdf
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.pdf.PdfDocument
@@ -13,42 +14,34 @@ class ContactSheetPdfWriter(
     private val layout: SheetLayout
 ) {
     private val bitmapPaint = Paint(Paint.FILTER_BITMAP_FLAG)
-    private val emptyPaint = Paint().apply { color = Color.LTGRAY }
-    private val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        strokeWidth = 0.8f; color = Color.GRAY; style = Paint.Style.STROKE
-    }
-    private val captionPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = 10f; color = Color.DKGRAY; textAlign = Paint.Align.CENTER
-    }
-    private val titlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = 16f; isFakeBoldText = true; color = Color.BLACK
-    }
-    private val datePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = 11f; color = Color.DKGRAY; textAlign = Paint.Align.RIGHT
-    }
-    private val footerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = 9f; color = Color.GRAY; textAlign = Paint.Align.CENTER
+    private val cutPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        strokeWidth = 0.8f
+        color = Color.GRAY
+        style = Paint.Style.STROKE
+        pathEffect = DashPathEffect(floatArrayOf(4f, 3f), 0f)
     }
 
     fun write(
         photoCount: Int,
-        dateText: String,
         thumbnail: (index: Int) -> Bitmap?,
         onProgress: (done: Int, total: Int) -> Unit
     ): ByteArray {
         val doc = PdfDocument()
+        val gap = GridCalculator.GAP_MM * GridCalculator.MM_TO_PT
+        val gridW = layout.columns * layout.cellWidthPt + (layout.columns - 1) * gap
+        val gridH = layout.rowsPerPage * layout.cellHeightPt + (layout.rowsPerPage - 1) * gap
+        val startX = (spec.pageWidthPt - gridW) / 2f
+        val startY = (spec.pageHeightPt - gridH) / 2f
         for (page in 0 until layout.pageCount) {
             val info = PdfDocument.PageInfo.Builder(
                 spec.pageWidthPt.toInt(), spec.pageHeightPt.toInt(), page + 1
             ).create()
             val sheet = doc.startPage(info)
             val canvas = sheet.canvas
-            drawHeader(canvas, dateText)
-            drawFooter(canvas, page)
             for (i in 0 until layout.photosPerPage) {
                 val index = page * layout.photosPerPage + i
                 if (index >= photoCount) break
-                drawCell(canvas, i, index, thumbnail(index))
+                drawCell(canvas, startX, startY, i, index, thumbnail(index))
                 onProgress(index + 1, photoCount)
             }
             doc.finishPage(sheet)
@@ -59,52 +52,39 @@ class ContactSheetPdfWriter(
         return out.toByteArray()
     }
 
-    private fun drawHeader(canvas: Canvas, dateText: String) {
-        val title = spec.title.ifBlank { "Planche contact" }
-        canvas.drawText(title, GridCalculator.MARGIN_PT,
-            GridCalculator.MARGIN_PT + 20f, titlePaint)
-        canvas.drawText(dateText, spec.pageWidthPt - GridCalculator.MARGIN_PT,
-            GridCalculator.MARGIN_PT + 16f, datePaint)
-    }
-
-    private fun drawFooter(canvas: Canvas, page: Int) {
-        canvas.drawText("Page ${page + 1} / ${layout.pageCount}",
-            spec.pageWidthPt / 2f,
-            spec.pageHeightPt - GridCalculator.MARGIN_PT - 9f, footerPaint)
-    }
-
-    private fun drawCell(canvas: Canvas, slot: Int, index: Int, bitmap: Bitmap?) {
+    private fun drawCell(
+        canvas: Canvas,
+        startX: Float,
+        startY: Float,
+        slot: Int,
+        index: Int,
+        bitmap: Bitmap?
+    ) {
         val col = slot % layout.columns
         val row = slot / layout.columns
-        val x = GridCalculator.MARGIN_PT + col * (layout.cellWidthPt + GridCalculator.GAP_PT)
-        val y = GridCalculator.MARGIN_PT + GridCalculator.HEADER_PT +
-            row * (layout.cellHeightPt + GridCalculator.CAPTION_PT + GridCalculator.GAP_PT)
+        val gap = GridCalculator.GAP_MM * GridCalculator.MM_TO_PT
+        val x = startX + col * (layout.cellWidthPt + gap)
+        val y = startY + row * (layout.cellHeightPt + gap)
         val cell = RectF(x, y, x + layout.cellWidthPt, y + layout.cellHeightPt)
-        canvas.drawRect(cell, borderPaint)
         val bmp = bitmap
         if (bmp != null) {
-            if (bmp.height > bmp.width) {
-                val cx = cell.centerX()
-                val cy = cell.centerY()
-                val scale = minOf(cell.height() / bmp.width, cell.width() / bmp.height)
-                val dw = bmp.width * scale
-                val dh = bmp.height * scale
-                canvas.save()
-                canvas.rotate(90f, cx, cy)
-                canvas.drawBitmap(bmp, null,
-                    RectF(cx - dw / 2f, cy - dh / 2f, cx + dw / 2f, cy + dh / 2f), bitmapPaint)
-                canvas.restore()
+            val rotate = (bmp.height > bmp.width) != (layout.cellHeightPt > layout.cellWidthPt)
+            val scale = if (rotate) {
+                maxOf(layout.cellHeightPt / bmp.width, layout.cellWidthPt / bmp.height)
             } else {
-                val scale = minOf(cell.width() / bmp.width, cell.height() / bmp.height)
-                val dw = bmp.width * scale
-                val dh = bmp.height * scale
-                val dx = cell.left + (cell.width() - dw) / 2f
-                val dy = cell.top + (cell.height() - dh) / 2f
-                canvas.drawBitmap(bmp, null, RectF(dx, dy, dx + dw, dy + dh), bitmapPaint)
+                maxOf(layout.cellWidthPt / bmp.width, layout.cellHeightPt / bmp.height)
             }
-        } else {
-            canvas.drawRect(cell, emptyPaint)
+            val dw = bmp.width * scale
+            val dh = bmp.height * scale
+            val cx = cell.centerX()
+            val cy = cell.centerY()
+            canvas.save()
+            canvas.clipRect(cell)
+            if (rotate) canvas.rotate(90f, cx, cy)
+            canvas.drawBitmap(bmp, null,
+                RectF(cx - dw / 2f, cy - dh / 2f, cx + dw / 2f, cy + dh / 2f), bitmapPaint)
+            canvas.restore()
         }
-        canvas.drawText("${index + 1}", cell.centerX(), cell.bottom + 11f, captionPaint)
+        canvas.drawRect(cell, cutPaint)
     }
 }

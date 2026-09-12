@@ -1,64 +1,97 @@
 package com.tmenard.planchecontact.pdf
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class GridCalculatorTest {
 
-    private val portrait = SheetSpec(landscape = false, columns = 5, title = "Test")
+    private fun spec(format: Int, landscape: Boolean = false) =
+        SheetSpec(landscape = landscape, format = format)
 
     @Test
-    fun `portrait 5 colonnes`() {
-        val l = GridCalculator.computeLayout(portrait, 47)
-        assertEquals(99.056f, l.cellWidthPt, 0.01f)   // (595.28-68-4*8)/5
-        assertEquals(66.03f, l.cellHeightPt, 0.01f)  // cellW * 2/3
-        assertEquals(7, l.rowsPerPage)                // floor(717.89 / 90.037)
-        assertEquals(35, l.photosPerPage)
+    fun `A4 pleine page sans marge`() {
+        val l = GridCalculator.computeLayout(spec(4), 1)
+        assertEquals(1, l.columns)
+        assertEquals(1, l.rowsPerPage)
+        assertEquals(1, l.photosPerPage)
+        assertEquals(595.28f, l.cellWidthPt, 0.01f)
+        assertEquals(841.89f, l.cellHeightPt, 0.01f)
+        assertEquals(3, GridCalculator.computeLayout(spec(4), 3).pageCount)
+    }
+
+    @Test
+    fun `A6 - 2 vignettes 148x105 par page portrait`() {
+        val l = GridCalculator.computeLayout(spec(6), 3)
+        assertEquals(1, l.columns)
+        assertEquals(2, l.rowsPerPage)
+        assertEquals(2, l.photosPerPage)
+        assertEquals(419.53f, l.cellWidthPt, 0.05f)
+        assertEquals(297.64f, l.cellHeightPt, 0.05f)
         assertEquals(2, l.pageCount)
     }
 
     @Test
-    fun `paysage 6 colonnes`() {
-        val l = GridCalculator.computeLayout(SheetSpec(landscape = true, columns = 6), 60)
-        assertEquals(122.31f, l.cellWidthPt, 0.01f)   // (841.89-68-5*8)/6
-        assertEquals(4, l.rowsPerPage)
-        assertEquals(24, l.photosPerPage)
+    fun `A7 - 4 vignettes 74x105 par page portrait`() {
+        val l = GridCalculator.computeLayout(spec(7), 10)
+        assertEquals(2, l.columns)
+        assertEquals(2, l.rowsPerPage)
+        assertEquals(4, l.photosPerPage)
+        assertEquals(209.76f, l.cellWidthPt, 0.05f)
+        assertEquals(297.64f, l.cellHeightPt, 0.05f)
         assertEquals(3, l.pageCount)
     }
 
     @Test
+    fun `A9 - 25 vignettes 37x52 par page portrait`() {
+        val l = GridCalculator.computeLayout(spec(9), 100)
+        assertEquals(5, l.columns)
+        assertEquals(5, l.rowsPerPage)
+        assertEquals(25, l.photosPerPage)
+        assertEquals(104.88f, l.cellWidthPt, 0.05f)
+        assertEquals(147.40f, l.cellHeightPt, 0.05f)
+        assertEquals(4, l.pageCount)
+    }
+
+    @Test
+    fun `A10 - 50 vignettes 37x26 par page portrait`() {
+        val l = GridCalculator.computeLayout(spec(10), 100)
+        assertEquals(5, l.columns)
+        assertEquals(10, l.rowsPerPage)
+        assertEquals(50, l.photosPerPage)
+        assertEquals(104.88f, l.cellWidthPt, 0.05f)
+        assertEquals(73.70f, l.cellHeightPt, 0.05f)
+        assertEquals(2, l.pageCount)
+    }
+
+    @Test
+    fun `page paysage - A6 devient 2 vignettes portrait`() {
+        val l = GridCalculator.computeLayout(spec(6, landscape = true), 3)
+        assertEquals(2, l.columns)
+        assertEquals(1, l.rowsPerPage)
+        assertEquals(2, l.photosPerPage)
+        assertEquals(297.64f, l.cellWidthPt, 0.05f)
+        assertEquals(419.53f, l.cellHeightPt, 0.05f)
+    }
+
+    @Test
     fun `zero photo = une page`() {
-        assertEquals(1, GridCalculator.computeLayout(portrait, 0).pageCount)
+        assertEquals(1, GridCalculator.computeLayout(spec(6), 0).pageCount)
     }
 
     @Test
-    fun `taille cible miniature en pixels`() {
-        val l = GridCalculator.computeLayout(portrait, 10)
-        assertEquals(412, GridCalculator.thumbnailTargetPx(l)) // 99.056/72*300
-    }
-
-    @Test
-    fun `limites de pagination (multiples exacts)`() {
-        val l = GridCalculator.computeLayout(portrait, 35)
-        assertEquals(1, l.pageCount)
-        assertEquals(2, GridCalculator.computeLayout(portrait, 36).pageCount)
-        assertEquals(2, GridCalculator.computeLayout(portrait, 70).pageCount)
-        assertEquals(3, GridCalculator.computeLayout(portrait, 71).pageCount)
-    }
-
-    @Test
-    fun `domaine colonnes 2 a 8 valide dans les deux orientations`() {
-        for (landscape in listOf(false, true)) {
-            for (columns in 2..8) {
-                val l = GridCalculator.computeLayout(
-                    SheetSpec(landscape = landscape, columns = columns), 10)
-                org.junit.Assert.assertTrue(
-                    "rowsPerPage<1 pour landscape=$landscape columns=$columns",
-                    l.rowsPerPage >= 1)
-                org.junit.Assert.assertTrue(
-                    "photosPerPage<columns pour landscape=$landscape columns=$columns",
-                    l.photosPerPage >= columns)
-            }
+    fun `formats hors domaine rejetes`() {
+        assertThrows(IllegalArgumentException::class.java) {
+            GridCalculator.computeLayout(spec(3), 1)
         }
+        assertThrows(IllegalArgumentException::class.java) {
+            GridCalculator.computeLayout(spec(11), 1)
+        }
+    }
+
+    @Test
+    fun `taille cible miniature A4 en pixels`() {
+        val l = GridCalculator.computeLayout(spec(4), 1)
+        assertEquals(2480, GridCalculator.thumbnailTargetPx(l))
     }
 }
