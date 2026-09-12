@@ -1,12 +1,12 @@
-# Prêt pour l'école - Photos — Design (spec)
+# PPE - Photos — Design (spec)
 
 **Date :** 2026-09-12
-**Statut :** Approuvé par l'utilisateur (v2 : formats An + gabarit de découpe)
+**Statut :** Approuvé par l'utilisateur (v2 : formats An + gabarit de découpe ; marge 2 mm)
 **Plateforme :** Android natif (Kotlin)
 
 ## Objet
 
-App Android « **Prêt pour l'école - Photos** » (icône PPE : chapeau blanc sur dégradé rose, issue de `~/work/ppe`) permettant de créer des planches contact à partir des photos de la galerie, exportées en **PDF A4** optimisé pour une **impression rapide** : les photos sont redimensionnées avant intégration au PDF.
+App Android « **PPE - Photos** » (icône PPE : chapeau blanc sur dégradé rose, issue de `~/work/ppe`) permettant de créer des planches contact à partir des photos de la galerie, exportées en **PDF A4** optimisé pour une **impression rapide** : les photos sont redimensionnées avant intégration au PDF.
 
 ## Décisions utilisateur
 
@@ -36,7 +36,7 @@ Pas de base de données, session en mémoire. Réordonnancement drag & drop excl
 
 - Décodage **échantillonné** de chaque photo directement à la taille de sa vignette (`ContentResolver.loadThumbnail`, API 29+) — jamais de bitmap pleine résolution en mémoire, traitement **séquentiel** (pas d'OOM possible).
 - Taille cible = **plus long côté** de la carte × **300 DPI** (levier de poids, ajustable à 200).
-- Rendu sur canvas `android.graphics.pdf.PdfDocument` : **page A4 toujours**, marges 4 mm, écart 2 mm entre cartes, grille **centrée** dans l'espace restant, photo en recadrage centré remplissant la carte, **traits pointillés gris (0,8 pt, pattern 4/3)** = lignes de découpe sur chaque carte, format A4 = carte pleine page sans marge.
+- Rendu sur canvas `android.graphics.pdf.PdfDocument` : **page A4 toujours**, marges **2 mm**, écart 2 mm entre cartes, grille **centrée** dans l'espace restant, photo en recadrage centré remplissant la carte, **traits pointillés gris (0,8 pt, pattern 4/3)** = lignes de découpe sur chaque carte, format A4 = carte pleine page sans marge.
 - Photos en excès → **multi-pages automatique**.
 - Critère d'acceptation : **50 photos ≈ PDF < 5 Mo** (vs 50-100 Mo sans redimensionnement) → impression quasi instantanée.
 
