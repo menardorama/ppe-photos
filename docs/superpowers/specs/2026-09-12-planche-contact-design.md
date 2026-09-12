@@ -35,12 +35,12 @@ Pas de base de données, session en mémoire. Réordonnancement drag & drop excl
 ## 2. Pipeline de génération (cœur du besoin)
 
 - Décodage **échantillonné** de chaque photo directement à la taille de sa vignette (`ContentResolver.loadThumbnail`, API 29+) — jamais de bitmap pleine résolution en mémoire, traitement **séquentiel** (pas d'OOM possible).
-- Taille cible = **plus long côté** de la carte × **300 DPI** (levier de poids, ajustable à 200).
-- Rendu sur canvas `android.graphics.pdf.PdfDocument` : **page A4 toujours**, marge et écart **0** (cartes bord à bord, reste ≤ 2 mm par côté après centrage), photo en recadrage centré remplissant la carte, **traits pointillés gris (0,8 pt, pattern 4/3)** = lignes de découpe (partagées entre cartes adjacentes), format A4 = carte pleine page.
+- Taille cible = **plus long côté** de la carte × **300 DPI**.
+- Rendu via un **générateur PDF maison** (`pdf/PdfBuilder.kt`, Kotlin pur, testé unitairement) : images **JPEG (DCTDecode, q85)** embarquées, traits de découpe vectoriels en pointillés (0,8 pt, motif 4/3), écriture en flux (pas d'accumulation mémoire). Photo = recadrage centré à la taille source (pas d'upscaling) + rotation 90° si l'orientation diffère de la carte, puis compression JPEG.
 - Photos en excès → **multi-pages automatique**.
-- Critère d'acceptation : **50 photos ≈ PDF < 5 Mo** (vs 50-100 Mo sans redimensionnement) → impression quasi instantanée.
+- Critère d'acceptation : planches de 50 photos ≈ **quelques Mo** (vs 30-50 Mo avec l'encodage sans perte de Skia).
 
-**Écart documenté :** la compression JPEG dans le PDF est gérée par le moteur natif (`PdfDocument`/Skia) — pas de contrôle direct de la qualité JPEG ; le levier de poids est la taille des miniatures (DPI). Pas de `inSampleSize` manuel : `loadThumbnail` fait l'échantillonnage nativement.
+**Écart documenté :** le `PdfDocument` de Skia encode toujours les images en FlateDecode sans perte (vérifié par test instrumenté sur le téléphone — aucune config bitmap ne produit de DCTDecode, cf. `PdfCompressionInstrumentedTest.kt`) → remplacé par un générateur PDF maison en JPEG. La qualité JPEG (q85) et la résolution (300 DPI) sont les leviers de poids.
 
 ## 3. Export
 
@@ -58,7 +58,7 @@ Pas de base de données, session en mémoire. Réordonnancement drag & drop excl
 
 - JDK 17 (Temurin, installé via brew), SDK Android (plateformes 34, émulateur Pixel_10_Pro API 37 dispo), Gradle 8.7 (cache local).
 - Gradle Kotlin DSL, AGP 8.6.1, Kotlin 2.0.21, compileSdk 34, minSdk 29, targetSdk 34.
-- Tests unitaires (JUnit) : logique de grille pure (formats An, pagination, tailles de cellules, taille cible des miniatures).
+- Tests unitaires (JUnit) : logique de grille pure (formats An, pagination, tailles de cellules) + **PdfBuilder** (structure PDF, xref, DCTDecode, placement, immunité locale) — 21 tests.
 - E2E sur **téléphone réel SM-G991N** (Galaxy S21, Android 15, adb R3CR20ASRJT) : génération, vérification taille PDF, test impression, contrôle visuel des traits de découpe. (Émulateur abandonné : SwiftShader sur Mac Intel, boot bloqué.)
 - Livraison : `app-debug.apk` installable sur le téléphone de l'utilisateur (`./gradlew installDebug`).
 
