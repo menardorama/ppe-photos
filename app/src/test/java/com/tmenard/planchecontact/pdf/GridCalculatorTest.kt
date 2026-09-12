@@ -10,7 +10,7 @@ class GridCalculatorTest {
         SheetSpec(landscape = landscape, format = format)
 
     @Test
-    fun `A4 pleine page sans marge`() {
+    fun `A4 pleine page`() {
         val l = GridCalculator.computeLayout(spec(4), 1)
         assertEquals(1, l.columns)
         assertEquals(1, l.rowsPerPage)
@@ -21,57 +21,79 @@ class GridCalculatorTest {
     }
 
     @Test
-    fun `A6 - 2 vignettes 148x105 par page portrait`() {
-        val l = GridCalculator.computeLayout(spec(6), 3)
+    fun `A5 - 2 vignettes 210x148 par page`() {
+        val l = GridCalculator.computeLayout(spec(5), 3)
         assertEquals(1, l.columns)
         assertEquals(2, l.rowsPerPage)
         assertEquals(2, l.photosPerPage)
-        assertEquals(419.53f, l.cellWidthPt, 0.05f)
-        assertEquals(297.64f, l.cellHeightPt, 0.05f)
+        assertEquals(595.28f, l.cellWidthPt, 0.05f)
+        assertEquals(419.53f, l.cellHeightPt, 0.05f)
         assertEquals(2, l.pageCount)
     }
 
     @Test
-    fun `A7 - 4 vignettes 74x105 par page portrait`() {
-        val l = GridCalculator.computeLayout(spec(7), 10)
+    fun `A6 - 4 vignettes 105x148 par page`() {
+        val l = GridCalculator.computeLayout(spec(6), 3)
         assertEquals(2, l.columns)
         assertEquals(2, l.rowsPerPage)
         assertEquals(4, l.photosPerPage)
-        assertEquals(209.76f, l.cellWidthPt, 0.05f)
-        assertEquals(297.64f, l.cellHeightPt, 0.05f)
-        assertEquals(3, l.pageCount)
+        assertEquals(297.64f, l.cellWidthPt, 0.05f)
+        assertEquals(419.53f, l.cellHeightPt, 0.05f)
+        assertEquals(1, l.pageCount)
     }
 
     @Test
-    fun `A9 - 25 vignettes 37x52 par page portrait`() {
+    fun `A7 - 8 vignettes 105x74 par page`() {
+        val l = GridCalculator.computeLayout(spec(7), 10)
+        assertEquals(2, l.columns)
+        assertEquals(4, l.rowsPerPage)
+        assertEquals(8, l.photosPerPage)
+        assertEquals(297.64f, l.cellWidthPt, 0.05f)
+        assertEquals(209.76f, l.cellHeightPt, 0.05f)
+        assertEquals(2, l.pageCount)
+    }
+
+    @Test
+    fun `A8 - 16 vignettes 52x74 par page`() {
+        val l = GridCalculator.computeLayout(spec(8), 20)
+        assertEquals(4, l.columns)
+        assertEquals(4, l.rowsPerPage)
+        assertEquals(16, l.photosPerPage)
+        assertEquals(147.40f, l.cellWidthPt, 0.05f)
+        assertEquals(209.76f, l.cellHeightPt, 0.05f)
+        assertEquals(2, l.pageCount)
+    }
+
+    @Test
+    fun `A9 - 32 vignettes 52x37 par page`() {
         val l = GridCalculator.computeLayout(spec(9), 100)
-        assertEquals(5, l.columns)
-        assertEquals(5, l.rowsPerPage)
-        assertEquals(25, l.photosPerPage)
-        assertEquals(104.88f, l.cellWidthPt, 0.05f)
-        assertEquals(147.40f, l.cellHeightPt, 0.05f)
+        assertEquals(4, l.columns)
+        assertEquals(8, l.rowsPerPage)
+        assertEquals(32, l.photosPerPage)
+        assertEquals(147.40f, l.cellWidthPt, 0.05f)
+        assertEquals(104.88f, l.cellHeightPt, 0.05f)
         assertEquals(4, l.pageCount)
     }
 
     @Test
-    fun `A10 - 50 vignettes 37x26 par page portrait`() {
+    fun `A10 - 64 vignettes 26x37 par page`() {
         val l = GridCalculator.computeLayout(spec(10), 100)
-        assertEquals(5, l.columns)
-        assertEquals(10, l.rowsPerPage)
-        assertEquals(50, l.photosPerPage)
-        assertEquals(104.88f, l.cellWidthPt, 0.05f)
-        assertEquals(73.70f, l.cellHeightPt, 0.05f)
+        assertEquals(8, l.columns)
+        assertEquals(8, l.rowsPerPage)
+        assertEquals(64, l.photosPerPage)
+        assertEquals(73.70f, l.cellWidthPt, 0.05f)
+        assertEquals(104.88f, l.cellHeightPt, 0.05f)
         assertEquals(2, l.pageCount)
     }
 
     @Test
-    fun `page paysage - A6 devient 2 vignettes portrait`() {
+    fun `page paysage - A6 - 4 vignettes 148x105 par page`() {
         val l = GridCalculator.computeLayout(spec(6, landscape = true), 3)
         assertEquals(2, l.columns)
-        assertEquals(1, l.rowsPerPage)
-        assertEquals(2, l.photosPerPage)
-        assertEquals(297.64f, l.cellWidthPt, 0.05f)
-        assertEquals(419.53f, l.cellHeightPt, 0.05f)
+        assertEquals(2, l.rowsPerPage)
+        assertEquals(4, l.photosPerPage)
+        assertEquals(419.53f, l.cellWidthPt, 0.05f)
+        assertEquals(297.64f, l.cellHeightPt, 0.05f)
     }
 
     @Test
