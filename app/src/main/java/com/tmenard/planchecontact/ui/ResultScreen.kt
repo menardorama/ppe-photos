@@ -16,6 +16,7 @@ fun ResultScreen(
     onOpen: (android.net.Uri) -> Unit,
     onPrint: () -> Unit,
     onShare: (android.net.Uri) -> Unit,
+    onBackToConfig: () -> Unit,
     onReset: () -> Unit
 ) {
     Surface(Modifier.fillMaxSize()) {
@@ -55,6 +56,8 @@ fun ResultScreen(
                     modifier = Modifier.fillMaxWidth()) { Text("Imprimer") }
                 OutlinedButton(onClick = { onShare(state.uri) },
                     modifier = Modifier.fillMaxWidth()) { Text("Partager") }
+                OutlinedButton(onClick = onBackToConfig,
+                    modifier = Modifier.fillMaxWidth()) { Text("Changer le format") }
                 Button(onClick = onReset,
                     modifier = Modifier.fillMaxWidth()) { Text("Nouvelle planche") }
             }

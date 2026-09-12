@@ -8,8 +8,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -23,9 +23,8 @@ import com.tmenard.planchecontact.pdf.SheetSpec
 fun ConfigScreen(
     spec: SheetSpec,
     photoCount: Int,
-    setTitle: (String) -> Unit,
     setLandscape: (Boolean) -> Unit,
-    setColumns: (Int) -> Unit,
+    setFormat: (Int) -> Unit,
     onBack: () -> Unit,
     onGenerate: () -> Unit
 ) {
@@ -46,12 +45,6 @@ fun ConfigScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            OutlinedTextField(
-                value = spec.title,
-                onValueChange = setTitle,
-                label = { Text("Titre (défaut : Planche contact)") },
-                modifier = Modifier.fillMaxWidth()
-            )
             Text("Orientation", style = MaterialTheme.typography.titleSmall)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(selected = !spec.landscape,
@@ -59,39 +52,51 @@ fun ConfigScreen(
                 FilterChip(selected = spec.landscape,
                     onClick = { setLandscape(true) }, label = { Text("Paysage") })
             }
-            Text("Taille des vignettes", style = MaterialTheme.typography.titleSmall)
+            Text("Format des vignettes", style = MaterialTheme.typography.titleSmall)
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                (2..8).forEach { cols ->
+                (4..10).forEach { f ->
+                    val l = GridCalculator.computeLayout(
+                        SheetSpec(landscape = spec.landscape, format = f), 1)
                     FilterChip(
-                        selected = spec.columns == cols,
-                        onClick = { setColumns(cols) },
-                        label = { Text("${mmForColumns(spec, cols)} mm") }
+                        selected = spec.format == f,
+                        onClick = { setFormat(f) },
+                        label = {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("A$f")
+                                Text(
+                                    "(${(l.cellWidthPt / GridCalculator.MM_TO_PT).toInt()}×" +
+                                        "${(l.cellHeightPt / GridCalculator.MM_TO_PT).toInt()} mm)",
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            }
+                        }
                     )
                 }
             }
-            // Aperçu live de la page 1
             Canvas(
                 Modifier.fillMaxWidth()
                     .aspectRatio(spec.pageWidthPt / spec.pageHeightPt)
                     .background(Color.White, MaterialTheme.shapes.small)
             ) {
                 val scale = size.width / spec.pageWidthPt
-                val m = GridCalculator.MARGIN_PT * scale
+                val gap = GridCalculator.GAP_MM * GridCalculator.MM_TO_PT * scale
+                val gridW = layout.columns * layout.cellWidthPt * scale +
+                    (layout.columns - 1) * gap
+                val gridH = layout.rowsPerPage * layout.cellHeightPt * scale +
+                    (layout.rowsPerPage - 1) * gap
+                val startX = (size.width - gridW) / 2f
+                val startY = (size.height - gridH) / 2f
                 val cellW = layout.cellWidthPt * scale
                 val cellH = layout.cellHeightPt * scale
-                val gap = GridCalculator.GAP_PT * scale
-                val top = (GridCalculator.MARGIN_PT + GridCalculator.HEADER_PT) * scale
-                val gray = Color(0xFF9E9E9E)
-                drawLine(gray, Offset(m, m * 1.6f), Offset(m + cellW * 2, m * 1.6f), 2f)
                 for (row in 0 until layout.rowsPerPage) {
                     for (col in 0 until layout.columns) {
                         drawRect(
                             Color(0xFFE0E0E0),
-                            topLeft = Offset(m + col * (cellW + gap),
-                                top + row * (cellH + (GridCalculator.CAPTION_PT + GridCalculator.GAP_PT) * scale)),
+                            topLeft = Offset(startX + col * (cellW + gap),
+                                startY + row * (cellH + gap)),
                             size = Size(cellW, cellH)
                         )
                     }
@@ -110,7 +115,3 @@ fun ConfigScreen(
         }
     }
 }
-
-private fun mmForColumns(spec: SheetSpec, cols: Int): Int =
-    ((spec.pageWidthPt - 2 * GridCalculator.MARGIN_PT - (cols - 1) * GridCalculator.GAP_PT) / cols
-        * 25.4f / 72f).toInt()

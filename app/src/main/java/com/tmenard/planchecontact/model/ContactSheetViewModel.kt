@@ -15,9 +15,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 data class PhotoItem(val uri: Uri)
 
@@ -54,12 +51,12 @@ class ContactSheetViewModel(app: Application) : AndroidViewModel(app) {
 
     fun removePhoto(item: PhotoItem) { _photos.value = _photos.value - item }
 
-    fun setTitle(t: String) { _spec.value = _spec.value.copy(title = t) }
     fun setLandscape(b: Boolean) { _spec.value = _spec.value.copy(landscape = b) }
-    fun setColumns(n: Int) { _spec.value = _spec.value.copy(columns = n.coerceIn(2, 8)) }
+    fun setFormat(f: Int) { _spec.value = _spec.value.copy(format = f.coerceIn(4, 10)) }
 
     fun goToConfig() { if (_photos.value.isNotEmpty()) _screen.value = AppScreen.CONFIG }
     fun backToSelection() { _screen.value = AppScreen.SELECTION }
+    fun backToConfig() { _screen.value = AppScreen.CONFIG }
 
     fun reset() {
         _photos.value = emptyList()
@@ -80,11 +77,8 @@ class ContactSheetViewModel(app: Application) : AndroidViewModel(app) {
                     val spec = _spec.value
                     val layout = GridCalculator.computeLayout(spec, photos.size)
                     val targetPx = GridCalculator.thumbnailTargetPx(layout)
-                    val dateText = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.FRANCE)
-                        .format(Date())
                     val bytes = ContactSheetPdfWriter(spec, layout).write(
                         photoCount = photos.size,
-                        dateText = dateText,
                         thumbnail = { i -> decoder.decode(photos[i].uri, targetPx) },
                         onProgress = { done, total ->
                             _state.value = UiState.Generating(done, total)

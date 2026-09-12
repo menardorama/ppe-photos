@@ -62,9 +62,8 @@ fun PlancheApp(vm: ContactSheetViewModel = viewModel()) {
         AppScreen.CONFIG -> ConfigScreen(
             spec = spec,
             photoCount = photos.size,
-            setTitle = vm::setTitle,
             setLandscape = vm::setLandscape,
-            setColumns = vm::setColumns,
+            setFormat = vm::setFormat,
             onBack = vm::backToSelection,
             onGenerate = vm::generate
         )
@@ -73,6 +72,7 @@ fun PlancheApp(vm: ContactSheetViewModel = viewModel()) {
             onOpen = { uri -> openPdf(context, uri) },
             onPrint = { (state as? UiState.Success)?.let { printPdf(context, it.bytes) } },
             onShare = { uri -> sharePdf(context, uri) },
+            onBackToConfig = vm::backToConfig,
             onReset = vm::reset
         )
     }
