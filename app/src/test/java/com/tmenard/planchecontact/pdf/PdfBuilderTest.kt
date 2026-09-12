@@ -2,6 +2,7 @@ package com.tmenard.planchecontact.pdf
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.After
 import org.junit.Before
@@ -121,11 +122,7 @@ class PdfBuilderTest {
 
     private fun objectString(pdf: ByteArray, info: XrefInfo, n: Int): String {
         val start = info.offsets[n]
-        val end = if (n + 1 < info.offsets.size && info.offsets[n + 1] > start) {
-            info.offsets[n + 1]
-        } else {
-            info.xrefOffset
-        }
+        val end = (info.offsets.filter { it > start } + info.xrefOffset).min()
         return String(pdf, start, end - start, ISO_8859_1)
     }
 
@@ -288,5 +285,31 @@ class PdfBuilderTest {
         val content = String(payloadOf(objectString(pdf, XrefInfo(xrefOffset, 0, offsets), 5)), ISO_8859_1)
         assertTrue("la valeur 419.53 doit apparaître avec un point", content.contains("419.53"))
         assertFalse(content.contains("419,53"))
+    }
+
+    @Test
+    fun `drawImage avant startPage echoue`() {
+        val b = PdfBuilder(595.28f, 841.89f)
+        assertThrows(IllegalStateException::class.java) {
+            b.drawImage(img(8, 6), 0f, 0f, 100f, 100f)
+        }
+        assertThrows(IllegalStateException::class.java) {
+            b.drawDashedRect(0f, 0f, 100f, 100f)
+        }
+    }
+
+    @Test
+    fun `ordre physique - images avant le catalogue`() {
+        val pdf = build {
+            startPage()
+            drawImage(img(8, 6), 0f, 0f, 100f, 100f)
+            finishPage()
+        }
+        val s = String(pdf, ISO_8859_1)
+        val header = s.indexOf("%PDF")
+        val image = s.indexOf("/Subtype /Image")
+        val catalog = s.indexOf("/Type /Catalog")
+        assertTrue(header < image)
+        assertTrue(image < catalog)
     }
 }
