@@ -73,5 +73,5 @@ object GridCalculator {
     }
 
     fun thumbnailTargetPx(layout: SheetLayout): Int =
-        (layout.cellWidthPt / 72f * PRINT_DPI).toInt()
+        (maxOf(layout.cellWidthPt, layout.cellHeightPt) / 72f * PRINT_DPI).toInt()
 }

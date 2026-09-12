@@ -20,6 +20,7 @@ class ContactSheetPdfWriter(
         style = Paint.Style.STROKE
         pathEffect = DashPathEffect(floatArrayOf(4f, 3f), 0f)
     }
+    private val gap = GridCalculator.GAP_MM * GridCalculator.MM_TO_PT
 
     fun write(
         photoCount: Int,
@@ -27,7 +28,6 @@ class ContactSheetPdfWriter(
         onProgress: (done: Int, total: Int) -> Unit
     ): ByteArray {
         val doc = PdfDocument()
-        val gap = GridCalculator.GAP_MM * GridCalculator.MM_TO_PT
         val gridW = layout.columns * layout.cellWidthPt + (layout.columns - 1) * gap
         val gridH = layout.rowsPerPage * layout.cellHeightPt + (layout.rowsPerPage - 1) * gap
         val startX = (spec.pageWidthPt - gridW) / 2f
@@ -62,7 +62,6 @@ class ContactSheetPdfWriter(
     ) {
         val col = slot % layout.columns
         val row = slot / layout.columns
-        val gap = GridCalculator.GAP_MM * GridCalculator.MM_TO_PT
         val x = startX + col * (layout.cellWidthPt + gap)
         val y = startY + row * (layout.cellHeightPt + gap)
         val cell = RectF(x, y, x + layout.cellWidthPt, y + layout.cellHeightPt)
