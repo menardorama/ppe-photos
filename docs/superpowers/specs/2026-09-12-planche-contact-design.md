@@ -1,7 +1,7 @@
 # PPE - Photos — Design (spec)
 
 **Date :** 2026-09-12
-**Statut :** Approuvé par l'utilisateur (v2 : formats An + gabarit de découpe ; marge 2 mm)
+**Statut :** Approuvé par l'utilisateur (v2 : formats An + gabarit de découpe ; cartes bord à bord)
 **Plateforme :** Android natif (Kotlin)
 
 ## Objet
@@ -13,7 +13,7 @@ App Android « **PPE - Photos** » (icône PPE : chapeau blanc sur dégradé ros
 | Sujet | Décision |
 |---|---|
 | Format de sortie | PDF A4, orientation portrait **ou** paysage au choix |
-| Densité | **Formats A4→A10 au choix** : chaque vignette = une carte photo au format An exact, découpable ; la taille réelle (mm) s'affiche en petit sur la puce. La grille s'oriente automatiquement pour maximiser le nombre par page (ex : A6 = 2/page en 148×105 ; A10 = 50/page en 37×26) |
+| Densité | **Formats A4→A10 au choix** : chaque vignette = une carte photo au format An exact, découpable ; la taille réelle (mm) s'affiche en petit sur la puce. Marges et écart à 0 : chaque format remplit la page A4 avec exactement **2^(n−4) cartes** (A5=2, A6=4, A7=8, A8=16, A9=32, A10=64), dans les deux orientations de page |
 | Légendes | Aucune — remplacées par un **gabarit de découpage** : traits pointillés gris autour de chaque carte (v2 : « le numéro ne sert à rien ») |
 | Remplissage | La photo **remplit** la vignette (recadrage centré, comme un tirage) ; rotation 90° quand l'orientation de la photo diffère de celle de la carte |
 | En-tête | Supprimé en v2 (marges 4 mm, les cartes occupent la page ; un titre gênerait la découpe) |
@@ -36,7 +36,7 @@ Pas de base de données, session en mémoire. Réordonnancement drag & drop excl
 
 - Décodage **échantillonné** de chaque photo directement à la taille de sa vignette (`ContentResolver.loadThumbnail`, API 29+) — jamais de bitmap pleine résolution en mémoire, traitement **séquentiel** (pas d'OOM possible).
 - Taille cible = **plus long côté** de la carte × **300 DPI** (levier de poids, ajustable à 200).
-- Rendu sur canvas `android.graphics.pdf.PdfDocument` : **page A4 toujours**, marges **2 mm**, écart 2 mm entre cartes, grille **centrée** dans l'espace restant, photo en recadrage centré remplissant la carte, **traits pointillés gris (0,8 pt, pattern 4/3)** = lignes de découpe sur chaque carte, format A4 = carte pleine page sans marge.
+- Rendu sur canvas `android.graphics.pdf.PdfDocument` : **page A4 toujours**, marge et écart **0** (cartes bord à bord, reste ≤ 2 mm par côté après centrage), photo en recadrage centré remplissant la carte, **traits pointillés gris (0,8 pt, pattern 4/3)** = lignes de découpe (partagées entre cartes adjacentes), format A4 = carte pleine page.
 - Photos en excès → **multi-pages automatique**.
 - Critère d'acceptation : **50 photos ≈ PDF < 5 Mo** (vs 50-100 Mo sans redimensionnement) → impression quasi instantanée.
 

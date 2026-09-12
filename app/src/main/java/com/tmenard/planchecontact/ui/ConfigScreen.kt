@@ -105,7 +105,7 @@ fun ConfigScreen(
                             topLeft = Offset(startX + col * (cellW + gap),
                                 startY + row * (cellH + gap)),
                             size = Size(cellW, cellH),
-                            style = Stroke(width = 1.5f)
+                            style = Stroke(width = 1.5.dp.toPx())
                         )
                     }
                 }
