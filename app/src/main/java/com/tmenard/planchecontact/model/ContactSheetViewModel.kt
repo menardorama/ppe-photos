@@ -71,6 +71,7 @@ class ContactSheetViewModel(app: Application) : AndroidViewModel(app) {
     fun generate() {
         val photos = _photos.value
         if (photos.isEmpty()) return
+        if (_state.value is UiState.Generating) return
         viewModelScope.launch {
             _state.value = UiState.Generating(0, photos.size)
             _screen.value = AppScreen.RESULT
@@ -94,6 +95,7 @@ class ContactSheetViewModel(app: Application) : AndroidViewModel(app) {
                 }
                 _state.value = UiState.Success(uri, name, bytes)
             } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
                 _state.value = UiState.Error(e.message ?: "Erreur inconnue")
             }
         }
