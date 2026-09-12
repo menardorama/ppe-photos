@@ -13,7 +13,7 @@ App Android permettant de créer des planches contact (grilles de vignettes num�
 | Sujet | Décision |
 |---|---|
 | Format de sortie | PDF A4, orientation portrait **ou** paysage au choix |
-| Densité | Gabarits au choix, il en faut beaucoup → slider colonnes 3-8 × 2 orientations |
+| Densité | Gabarits au choix, il en faut beaucoup → 7 presets de taille de vignette en mm (2-8 colonnes) × 2 orientations |
 | Légendes | Numéro sous chaque vignette |
 | Technologie | Kotlin natif (vs React Native/Flutter, écartés) |
 | Sélection photos | Sélecteur système (Photo Picker), zéro permission |
@@ -24,7 +24,7 @@ App Android permettant de créer des planches contact (grilles de vignettes num�
 App native Kotlin, single-activity, **Jetpack Compose** (Material 3), interface en **français**, thème clair/sombre automatique. 3 écrans :
 
 1. **Sélection** — bouton « Choisir des photos » → Photo Picker système (multi-sélection, zéro permission, max 100/session, accumulation possible). Grille des miniatures (Coil), suppression individuelle. L'ordre = ordre de sélection.
-2. **Configuration** — orientation (portrait/paysage), densité (slider colonnes 3→8, lignes auto-calculées), **aperçu live du rendu de la page 1**, titre d'en-tête éditable (défaut : « Planche contact » + date auto).
+2. **Configuration** — orientation (portrait/paysage), densité (7 presets de taille de vignette en mm, colonnes 2→8, lignes auto-calculées), **aperçu live du rendu de la page 1**, titre d'en-tête éditable (défaut : « Planche contact » + date auto).
 3. **Résultat** — progression, puis boutons **Ouvrir / Imprimer / Partager / Refaire**.
 
 Pas de base de données, session en mémoire. Réordonnancement drag & drop exclu (v1, YAGNI).

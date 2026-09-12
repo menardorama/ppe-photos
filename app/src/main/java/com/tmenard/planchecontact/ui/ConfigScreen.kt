@@ -68,7 +68,7 @@ fun ConfigScreen(
                     FilterChip(
                         selected = spec.columns == cols,
                         onClick = { setColumns(cols) },
-                        label = { Text(mmForColumns(spec, cols).toString() + " mm") }
+                        label = { Text("${mmForColumns(spec, cols)} mm") }
                     )
                 }
             }

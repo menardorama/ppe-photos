@@ -47,9 +47,9 @@ class GridCalculatorTest {
     }
 
     @Test
-    fun `domaine colonnes 3 a 8 valide dans les deux orientations`() {
+    fun `domaine colonnes 2 a 8 valide dans les deux orientations`() {
         for (landscape in listOf(false, true)) {
-            for (columns in 3..8) {
+            for (columns in 2..8) {
                 val l = GridCalculator.computeLayout(
                     SheetSpec(landscape = landscape, columns = columns), 10)
                 org.junit.Assert.assertTrue(
