@@ -24,7 +24,7 @@ object GridCalculator {
     const val MARGIN_MM = 0f
     const val GAP_MM = 0f
     const val MM_TO_PT = 72f / 25.4f
-    const val PRINT_DPI = 200
+    const val PRINT_DPI = 300
 
     private val FORMAT_MM = mapOf(
         4 to (210 to 297),
