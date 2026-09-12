@@ -21,7 +21,7 @@ data class SheetLayout(
 )
 
 object GridCalculator {
-    const val MARGIN_MM = 4f
+    const val MARGIN_MM = 2f
     const val GAP_MM = 2f
     const val MM_TO_PT = 72f / 25.4f
     const val PRINT_DPI = 300
